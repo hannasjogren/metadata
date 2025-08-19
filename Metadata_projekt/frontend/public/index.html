@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Metadata-sökning</title>
+</head>
+<body>
+  <h1>Sök filer</h1>
+
+  <!-- Formulär för att söka efter filer -->
+  <form id="searchForm">
+    <input type="text" name="fileName" placeholder="Filnamn">
+    <select name="fileType">
+      <option value="">Alla typer</option>
+      <option value="image">Bild</option>
+      <option value="pdf">PDF</option>
+      <option value="audio">Ljud</option>
+      <option value="office">Office</option>
+    </select>
+    <button type="submit">Sök</button>
+  </form>
+
+  <!-- Här visas sökresultaten -->
+  <ul id="results"></ul>
+
+  <!-- Kopplar in JavaScript-filen -->
+  <script src="../src/main.js"></script>
+</body>
+</html>
