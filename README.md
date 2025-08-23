@@ -1,4 +1,6 @@
-# Metadata-sökning – Backend & Frontend
+# Metadata-sökning – Backend & Frontend 
+
+Grupp 4 ( Hanna, Carl, Valmir & Omid )
 
 Detta projekt är ett komplett system för att ladda upp filer, extrahera metadata och söka i en databas baserat på filinformation. Systemet består av en backend (Node.js + Express + MySQL) och en enkel frontend (HTML + JavaScript).
 
@@ -42,6 +44,9 @@ Projektet är utvecklat för att:
 
 # Metadata-extraktion
 npm install exif-parser       # bilder
+
 npm install pdf-parse         # PDF
+
 npm install music-metadata    # ljudfiler
+
 npm install mammoth           # Word/Office
