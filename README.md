@@ -40,3 +40,8 @@ Projektet är utvecklat för att:
 
 5. **Starta servern**
 
+# Metadata-extraktion
+npm install exif-parser       # bilder
+npm install pdf-parse         # PDF
+npm install music-metadata    # ljudfiler
+npm install mammoth           # Word/Office
