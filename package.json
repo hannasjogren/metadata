@@ -1,0 +1,23 @@
+{
+  "name": "metadata",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "exif-parser": "^0.1.12",
+    "exifr": "^7.1.3",
+    "express": "^5.1.0",
+    "mammoth": "^1.10.0",
+    "multer": "^2.0.2",
+    "music-metadata": "^11.8.3",
+    "mysql2": "^3.14.3",
+    "pdf-parser": "^1.0.5"
+  }
+}
