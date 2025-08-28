@@ -2,18 +2,20 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8">
-  <title>Metadata-sökning</title>
+  <title>Metadata sökning</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Metadata-sökning</h1>
+  <h1>Metadata sökning</h1>
 
   <!-- Formulär för att ladda upp en fil -->
   <section>
     <h2>Ladda upp fil</h2>
     <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" name="file" required>
-      <button type="submit">Ladda upp</button>
+      <div class="form-row">
+        <input type="file" name="file" required>
+        <button type="submit">Ladda upp</button>
+      </div>
     </form>
     <p id="uploadResult"></p>
   </section>
@@ -22,27 +24,38 @@
   <section>
     <h2>Sök filer</h2>
     <form id="searchForm">
-      <input type="text" name="fileName" placeholder="Filnamn">
-      <input type="text" name="author" placeholder="Författare">
-      <input type="text" name="title" placeholder="Titel">
-      <input type="text" name="artist" placeholder="Artist">
-      <input type="date" name="date_gt" placeholder="Efter datum">
-      <input type="date" name="date_lt" placeholder="Före datum">
-      <input type="text" name="q" placeholder="Fulltextsökning">
-      <select name="fileType">
-        <option value="">Alla typer</option>
-        <option value="image">Bild</option>
-        <option value="pdf">PDF</option>
-        <option value="audio">Ljud</option>
-        <option value="office">Office</option>
-      </select>
-      <button type="submit">Sök</button>
+      <!-- Fulltextsökning och filtyp -->
+      <div class="form-row">
+        <input type="text" name="q" placeholder="Fulltextsökning">
+        <select name="fileType">
+          <option value="">Alla typer</option>
+          <option value="image">Bild</option>
+          <option value="pdf">PDF</option>
+          <option value="audio">Ljud</option>
+          <option value="office">Office</option>
+        </select>
+      </div>
+
+      <!-- Metadatafält -->
+      <div class="form-row">
+        <input type="text" name="fileName" placeholder="Filnamn">
+        <input type="text" name="author" placeholder="Författare">
+        <input type="text" name="title" placeholder="Titel">
+        <input type="text" name="artist" placeholder="Artist">
+      </div>
+
+      <!-- Datumfält och sökknapp -->
+      <div class="form-row">
+        <input type="date" name="date_gt" placeholder="Efter datum">
+        <input type="date" name="date_lt" placeholder="Före datum">
+        <button type="submit">Sök</button>
+      </div>
     </form>
   </section>
 
   <!-- Resultatlista -->
   <section>
-    <h2>Resultat</h2>
+    <h2>Sök Resultat</h2>
     <table id="results">
       <thead>
         <tr>
