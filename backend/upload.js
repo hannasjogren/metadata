@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
     } else if (file.mimetype.includes("word") || file.mimetype.includes("excel")) {
       metadata = await extractOfficeMetadata(file.path);
     } else {
-      return res.status(400).send("⚠ Filtyp stöds ej.");
+      return res.status(400).send("Filtyp stöds ej.");
     }
 
     // Sparar metadata i databasen
@@ -43,9 +43,10 @@ module.exports = async (req, res) => {
       ]
     );
 
-    res.send("✅ Metadata sparad!");
+    res.send("Metadata sparad!");
   } catch (err) {
     console.error(err);
     res.status(500).send("Fel vid metadataextraktion.");
   }
 };
+
