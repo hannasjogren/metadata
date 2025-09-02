@@ -9,6 +9,7 @@ CREATE TABLE metadata (
   id INT AUTO_INCREMENT PRIMARY KEY,
   fileName VARCHAR(255),
   fileType VARCHAR(50),
+  data LONGBLOB NOT NULL,
   latitude DECIMAL(10, 8),
   longitude DECIMAL(11, 8),
   date DATETIME,
