@@ -50,3 +50,11 @@ npm install pdf-parse         # PDF
 npm install music-metadata    # ljudfiler
 
 npm install mammoth           # Word/Office
+
+npm install cors
+
+npm install dotenv
+
+npm install jest
+
+npm install supertest
