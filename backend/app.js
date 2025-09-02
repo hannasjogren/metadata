@@ -4,27 +4,48 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-
-const uploadHandler = require("./upload");
-const searchRoutes = require("./routes/search");
+const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
+const PORT = 3000;
 
-// Multer används för att hantera uppladdade filer, sparas tillfälligt i ./uploads
-const upload = multer({ dest: "uploads/" });
+// Tillåt frontend från Live Server (port 5500)
+app.use(cors({ origin: "http://127.0.0.1:5500" }));
 
-app.use(express.json()); // Gör så att servern kan ta emot JSON-data
+// Hantera JSON och formulärdata
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Serverar frontend-filerna (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, "../frontend/public")));
+// Sätt upp lagring för uppladdade filer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, "app/images"),
+  filename: (req, file, cb) => cb(null, file.originalname),
+});
+const upload = multer({ storage });
 
-// Route för filuppladdning
-app.post("/upload", upload.single("file"), uploadHandler);
+// Uppladdningsroute
+app.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: "Ingen fil mottagen" });
+  // Här kan du extrahera metadata och spara i databas
+  res.json({ success: true });
+});
 
-// Route för sökning
-app.use("/search", searchRoutes);
+// Förhandsvisning av fil
+app.get("/preview/:filename", (req, res) => {
+  const filePath = path.join(__dirname, "app", "images", req.params.filename);
+  if (!fs.existsSync(filePath)) return res.status(404).send("Filen hittades inte");
+  res.sendFile(filePath);
+});
+
+// Nedladdning
+app.get("/download/:filename", (req, res) => {
+  const filePath = path.join(__dirname, "app", "images", req.params.filename);
+  if (!fs.existsSync(filePath)) return res.status(404).send("Filen hittades inte");
+  res.download(filePath);
+});
 
 // Starta servern
-app.listen(3000, () =>
-  console.log("Servern körs på http://localhost:3000")
-);
+app.listen(PORT, () => {
+  console.log(`Servern körs på http://localhost:${PORT}`);
+});
