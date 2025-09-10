@@ -26,3 +26,16 @@ CREATE TABLE image_metadata (
   filetype VARCHAR(100),
   uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS pdf_metadata (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  filename VARCHAR(1024) NOT NULL,
+  stored_name VARCHAR(1024) NOT NULL,
+  title VARCHAR(512),
+  author VARCHAR(512),
+  creation_date DATE,
+  content_preview TEXT,
+  text_content LONGTEXT,
+  filetype VARCHAR(64),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
