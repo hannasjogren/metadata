@@ -5,25 +5,6 @@
   <title>Metadata-sökning</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <style>
-    iframe.preview {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 200px;
-      height: 250px;
-    }
-    td {
-      vertical-align: top;
-    }
-    pre.pdf-text {
-      border: 1px solid #ccc;
-      padding: 10px;
-      width: 400px;
-      height: 250px;
-      overflow: auto;
-      white-space: pre-wrap;
-    }
-  </style>
 </head>
 <body>
   <h1 class="main-title">Metadata-sökning</h1>
@@ -47,6 +28,9 @@
         <option value="">Alla typer</option>
         <option value="image">Bild</option>
         <option value="pdf">PDF</option>
+        <option value="music">Musik</option>
+        <option value="office">Kontorsfiler</option>
+
       </select>
       <button type="submit" class="btn">Filtrera</button>
     </form>
@@ -76,6 +60,37 @@
     <h2>GPS-positioner</h2>
     <div id="map" style="height: 400px;"></div>
   </section>
+
+  <section class="card">
+  <h2>Musikfiler</h2>
+  <table id="musicResults">
+    <thead>
+      <tr>
+        <th>Filnamn</th>
+        <th>Artist</th>
+        <th>Titel</th>
+        <th>År</th>
+        <th>Spela</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section class="card">
+  <h2>Kontorsfiler</h2>
+  <table id="officeResults">
+    <thead>
+      <tr>
+        <th>Filnamn</th>
+        <th>Typ</th>
+        <th>Preview</th>
+        <th>Ladda ner</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="src/main.js"></script>
