@@ -39,3 +39,20 @@ CREATE TABLE IF NOT EXISTS pdf_metadata (
   filetype VARCHAR(64),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS music_metadata (
+      filename TEXT,
+      artist TEXT,
+      title TEXT,
+      year YEAR,
+      label TEXT,
+      duration FLOAT,
+      bitrate INT,
+      filetype TEXT
+    );
+
+CREATE TABLE IF NOT EXISTS office_metadata (
+      filename TEXT,
+      filetype TEXT,
+      content_preview TEXT
+    );
