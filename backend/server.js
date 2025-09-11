@@ -1,13 +1,15 @@
-import express from 'express';
-import cors from 'cors';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import pool from '../database/connection.js';
-import extractPdfMetadata from './extractors/pdf.js';
-import exifr from 'exifr';
+import express from 'express'; // Webbramverk för att skapa HTTP-server
+import cors from 'cors'; // Hanterar CORS-policy för att tillåta externa förfrågningar
+import path from 'path'; // Hanterar filvägar
+import fs from 'fs'; // Filsystemmodul för att läsa och skriva filer
+import { fileURLToPath } from 'url'; // Konverterar import.meta.url till filväg
+import pool from '../database/connection.js'; // Databasanslutning via MySQL-pool
+import extractPdfMetadata from './extractors/pdf.js'; // Funktion för att extrahera metadata från PDF
+import exifr from 'exifr'; // Bibliotek för att extrahera EXIF-data från bilder
+import mime from 'mime-types'; // Identifierar MIME-typ baserat på filändelse
+import multer from 'multer'; // Hanterar filuppladdning via formulär
 
+// Hämta aktuell filväg och mapp
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,28 +17,34 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Uppladdning
+// Serverar frontend-filer (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Serverar uppladdade filer
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Serverar ljudfiler
+app.use('/audio', express.static(path.join(__dirname, '../audio')));
+
+// Serverar kontorsfiler
+app.use('/office', express.static(path.join(__dirname, '../office')));
+
+// Konfigurerar uppladdningsmapp
 const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const upload = multer({ dest: uploadDir });
 
-// Static paths
-app.use(express.static(path.join(__dirname, '../frontend')));
-app.use('/uploads', express.static(uploadDir));
-
-// Upload endpoint
+/**
+ * Endpoint för att ta emot och hantera filuppladdning
+ */
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
     if (!file) return res.status(400).json({ error: 'Ingen fil mottagen' });
 
-    const filename = file.originalname;
-    const storedName = file.filename;
-    const filetype = file.mimetype;
+    const { originalname: filename, filename: storedName, mimetype: filetype } = file;
 
-    // PDF
+    // Hantering av PDF-filer
     if (filetype.includes('pdf')) {
       const metadata = await extractPdfMetadata(file.path);
 
@@ -58,7 +66,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
           content_preview, text_content, filetype
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          metadata.fileName,
+          filename,
           storedName,
           metadata.title || null,
           metadata.author || null,
@@ -72,7 +80,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       return res.status(200).json({ message: 'PDF uppladdad och metadata sparad' });
     }
 
-    // IMAGE
+    // Hantering av bildfiler
     const metadata = await exifr.parse(file.path);
 
     const [existing] = await pool.query(
@@ -124,7 +132,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Search endpoint
+/**
+ * Endpoint för att söka metadata baserat på modell, datumintervall och filtyp
+ */
 app.get('/api/search', async (req, res) => {
   const { model, date_gt, date_lt, filetype } = req.query;
 
@@ -137,6 +147,7 @@ app.get('/api/search', async (req, res) => {
     let images = [];
     let pdfs = [];
 
+    // Sökning i bildmetadata
     if (!filetype || filetype === 'image') {
       if (model) {
         imageConditions.push('model LIKE ?');
@@ -155,6 +166,7 @@ app.get('/api/search', async (req, res) => {
       [images] = await pool.query(`SELECT * FROM image_metadata${where} ORDER BY uploaded_at DESC`, imageValues);
     }
 
+    // Sökning i PDF-metadata
     if (!filetype || filetype === 'pdf') {
       if (date_gt) {
         pdfConditions.push('creation_date >= ?');
@@ -166,9 +178,10 @@ app.get('/api/search', async (req, res) => {
       }
 
       const where = pdfConditions.length ? ` WHERE ${pdfConditions.join(' AND ')}` : '';
-      [pdfs] = await pool.query(`SELECT * FROM pdf_metadata${where} ORDER BY uploaded_at DESC`, pdfValues);
+      [pdfs] = await pool.query(`SELECT * FROM pdf_metadata${where} ORDER BY created_at DESC`, pdfValues);
     }
 
+    // Returnerar sammanslagen lista
     res.json([...images, ...pdfs]);
   } catch (error) {
     console.error('Fel vid sökning:', error);
@@ -176,7 +189,33 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
-// Start server
+/**
+ * Endpoint för att hämta metadata om musikfiler
+ */
+app.get('/api/music', async (req, res) => {
+  try {
+    const [tracks] = await pool.query('SELECT * FROM music_metadata ORDER BY filename');
+    res.json(tracks);
+  } catch (err) {
+    console.error('Fel vid hämtning av musikmetadata:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Endpoint för att hämta metadata om kontorsfiler
+ */
+app.get('/api/office', async (req, res) => {
+  try {
+    const [files] = await pool.query('SELECT * FROM office_metadata ORDER BY filename');
+    res.json(files);
+  } catch (err) {
+    console.error('Fel vid hämtning av kontorsfiler:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Startar servern på port 3001
 app.listen(3001, () => {
   console.log('Servern körs på http://localhost:3001');
 });
