@@ -2,13 +2,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const uploadForm = document.getElementById('uploadForm');
   const uploadResult = document.getElementById('uploadResult');
   const filterForm = document.getElementById('filterForm');
+  const resultsBody = document.querySelector('#results tbody');
+
+  const map = L.map('map').setView([56.05, 12.70], 6); // Ängelholm-ish
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
 
   uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(uploadForm);
 
     try {
-      const res = await fetch('/upload', { method: 'POST', body: formData });
+      const res = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
       const data = await res.json();
       uploadResult.textContent = data.message || 'Uppladdning klar.';
       fetchResults();
@@ -37,28 +46,36 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/search' + query);
       const results = await res.json();
       renderResults(results);
-      renderMap(results);
     } catch (err) {
       console.error('Fel vid hämtning av resultat:', err);
     }
   }
 
   function renderResults(results) {
-    const tbody = document.querySelector('#results tbody');
-    tbody.innerHTML = '';
+    resultsBody.innerHTML = '';
+    map.eachLayer(layer => {
+      if (layer instanceof L.Marker) map.removeLayer(layer);
+    });
 
     results.forEach(file => {
       const tr = document.createElement('tr');
 
-      const thumb = file.filetype === 'pdf'
-        ? `<a href="/pdf/${file.filename}" target="_blank">Visa PDF</a>`
-        : `<img src="/uploads/${file.stored_name}" width="50" class="preview">`;
+      // Miniatyr
+      let thumb = '';
+      if (file.filetype === 'pdf') {
+        thumb = 'PDF';
+      } else if (file.filetype.startsWith('image')) {
+        thumb = `<img src="/uploads/${file.stored_name}" width="50">`;
+      } else {
+        thumb = 'Ingen';
+      }
 
+      // Preview
       let preview = '';
       if (file.filetype === 'pdf') {
-        preview = `<pre class="pdf-text">${file.content_preview || ''}</pre>`;
+        preview = `<iframe src="/uploads/${file.stored_name}" class="preview"></iframe>`;
       } else if (file.filetype.startsWith('image')) {
-        preview = `<img src="/uploads/${file.stored_name}" width="200" class="preview">`;
+        preview = `<img src="/uploads/${file.stored_name}" width="200">`;
       } else {
         preview = 'Ingen förhandsvisning';
       }
@@ -69,30 +86,20 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${thumb}</td>
         <td>${file.filename}</td>
         <td>${file.filetype}</td>
-        <td>${file.camera || ''}</td>
+        <td>${file.make || ''}</td>
         <td>${file.model || ''}</td>
-        <td>${file.lens || ''}</td>
-        <td>${file.creation_date || file.date_original || ''}</td>
+        <td>${file.lens_model || ''}</td>
+        <td>${file.date_original || file.creation_date || ''}</td>
         <td>${preview}</td>
         <td>${downloadLink}</td>
       `;
+      resultsBody.appendChild(tr);
 
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderMap(results) {
-    const mapDiv = document.getElementById('map');
-    mapDiv.innerHTML = ''; // Rensa gamla markers
-    const map = L.map('map').setView([0, 0], 2);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
-    }).addTo(map);
-
-    results.forEach(file => {
-      if (file.latitude && file.longitude) {
-        L.marker([file.latitude, file.longitude]).addTo(map)
-          .bindPopup(`<b>${file.filename}</b>`);
+      // GPS
+      if (file.gps_latitude && file.gps_longitude) {
+        L.marker([file.gps_latitude, file.gps_longitude])
+          .addTo(map)
+          .bindPopup(file.filename);
       }
     });
   }

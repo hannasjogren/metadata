@@ -1,20 +1,32 @@
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
-import exifr from 'exifr';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import pool from '../database/connection.js';
 import extractPdfMetadata from './extractors/pdf.js';
+import exifr from 'exifr';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const upload = multer({ dest: path.resolve('./uploads') });
-app.use('/uploads', express.static(path.resolve('./uploads')));
+// Uppladdning
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+const upload = multer({ dest: uploadDir });
 
-// === UPLOAD ===
+// Static paths
+app.use(express.static(path.join(__dirname, '../frontend')));
+app.use('/uploads', express.static(uploadDir));
+
+// Upload endpoint
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
@@ -60,7 +72,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       return res.status(200).json({ message: 'PDF uppladdad och metadata sparad' });
     }
 
-    // BILD
+    // IMAGE
     const metadata = await exifr.parse(file.path);
 
     const [existing] = await pool.query(
@@ -112,26 +124,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// === PDF TEXT VIEW ===
-app.get('/pdf/:filename', async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    const [rows] = await pool.query(
-      'SELECT text_content FROM pdf_metadata WHERE filename = ?',
-      [filename]
-    );
-    if (!rows.length) return res.status(404).send('PDF hittades inte');
-
-    const text = rows[0].text_content || '';
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(`<pre style="white-space: pre-wrap; word-wrap: break-word;">${text}</pre>`);
-  } catch (err) {
-    console.error('Fel vid visning av PDF:', err);
-    res.status(500).send('Fel vid visning av PDF');
-  }
-});
-
-// === SEARCH ===
+// Search endpoint
 app.get('/api/search', async (req, res) => {
   const { model, date_gt, date_lt, filetype } = req.query;
 
@@ -183,6 +176,7 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+// Start server
 app.listen(3001, () => {
   console.log('Servern körs på http://localhost:3001');
 });
