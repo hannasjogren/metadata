@@ -38,3 +38,15 @@ npm install
 Använd connection.js och kör extraktorskript för att skapa och fylla tabellerna
 
 ### 5. Starta server med node server.js
+
+# Metadata-extraktion
+
+Projektet använder följande bibliotek för att extrahera metadata från olika filtyper:
+
+| Filtyp         | Bibliotek                                                                 |
+|----------------|---------------------------------------------------------------------------|
+| Bilder         | `exifr`, `exiftool-vendored`                                              |
+| PDF            | `pdfjs-dist`, `pdf-parse`                                                 |
+| Ljudfiler      | `music-metadata`                                                          |
+| Office-dokument| `mammoth`, `xlsx`, `pptx-parser`, `unzipper`, `xml2js`                    |
+| Bildgenerering | `canvas`                                                                  |
