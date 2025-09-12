@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const filterForm = document.getElementById('filterForm');
   const resultsBody = document.querySelector('#results tbody');
   const musicBody = document.querySelector('#musicResults tbody');
+  const pdfBody = document.querySelector('#pdfResults tbody');
+  const officeBody = document.querySelector('#officeResults tbody');
 
   const map = L.map('map').setView([56.05, 12.70], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -23,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
       uploadResult.textContent = data.message || 'Uppladdning klar.';
       fetchResults();
       fetchMusic();
+      fetchOfficeFiles();
+      fetchPdfFiles();
     } catch (err) {
       console.error(err);
       uploadResult.textContent = 'Fel vid uppladdning.';
@@ -67,12 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     results.forEach(file => {
+      if (file.filetype === 'pdf') return;
+
       const tr = document.createElement('tr');
 
       let preview = '';
-      if (file.filetype === 'pdf') {
-        preview = `<iframe src="/uploads/${file.stored_name}" class="preview"></iframe>`;
-      } else if (file.filetype.startsWith('image')) {
+      if (file.filetype.startsWith('image')) {
         preview = `<img src="/uploads/${file.stored_name}" width="200">`;
       } else {
         preview = 'Ingen förhandsvisning';
@@ -98,6 +102,33 @@ document.addEventListener('DOMContentLoaded', () => {
           .bindPopup(file.filename);
       }
     });
+  }
+
+  async function fetchPdfFiles() {
+    try {
+      const res = await fetch('/api/search?filetype=pdf');
+      const files = await res.json();
+      pdfBody.innerHTML = '';
+
+      files.forEach(file => {
+        const tr = document.createElement('tr');
+        const safeFilename = encodeURIComponent(file.filename);
+
+        const preview = `<iframe src="/uploads/${file.stored_name}" class="preview"></iframe>`;
+        const downloadLink = `<a href="/uploads/${file.stored_name}" download="${file.filename}">Ladda ner</a>`;
+
+        tr.innerHTML = `
+          <td>${file.filename}</td>
+          <td>${file.filetype}</td>
+          <td>${formatDate(file.creation_date)}</td>
+          <td>${preview}</td>
+          <td>${downloadLink}</td>
+        `;
+        pdfBody.appendChild(tr);
+      });
+    } catch (err) {
+      console.error('Fel vid hämtning av PDF-filer:', err);
+    }
   }
 
   async function fetchMusic() {
@@ -133,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch('/api/office');
       const files = await res.json();
-      const officeBody = document.querySelector('#officeResults tbody');
       officeBody.innerHTML = '';
 
       files.forEach(file => {
@@ -155,4 +185,5 @@ document.addEventListener('DOMContentLoaded', () => {
   fetchResults();
   fetchMusic();
   fetchOfficeFiles();
+  fetchPdfFiles();
 });
