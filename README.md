@@ -20,7 +20,7 @@ Projektet är utvecklat för att:
 |-----------|--------------------------------------------------------------------------|
 | Backend   | Node.js, Express, MySQL                                                  |
 | Metadata  | exifr, exiftool-vendored, pdfjs-dist, pdf-parse, music-metadata, mammoth, xlsx, pptx-parser, unzipper, xml2js |
-| Frontend  | HTML, JavaScript (vanilla), Leaflet.js                                   |
+| Frontend  | HTML, JavaScript, Leaflet.js                                   |
 | Databas   | MySQL                                                                    |
 
 ## Installation
